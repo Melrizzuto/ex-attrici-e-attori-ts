@@ -21,7 +21,7 @@ type Actress = Person & {
   | "Israeli"
   | "Spanish"
   | "South Korean"
-  | "Chinese";
+  | "Chinese"
 };
 
 function isActress(dati: unknown): dati is Actress {
@@ -29,8 +29,9 @@ function isActress(dati: unknown): dati is Actress {
     typeof dati === "object" && dati !== null &&
     "id" in dati && typeof dati.id === "number" &&
     "name" in dati && typeof dati.name === "string" &&
-    "birth_years" in dati && typeof dati.birth_years === "number" &&
-    "death_years" in dati && typeof dati.death_years === "number" &&
+    "birth_year" in dati && typeof dati.birth_year === "number" &&
+    "death_year" in dati &&
+    (typeof dati.death_year === "undefined" || typeof dati.death_year === "number") &&
     "biography" in dati && typeof dati.biography === "string" &&
     "image" in dati && typeof dati.image === "string" &&
     "most_famous_movies" in dati &&
@@ -40,10 +41,21 @@ function isActress(dati: unknown): dati is Actress {
     dati.most_famous_movies.every(m => typeof m === "string") &&
     "awards" in dati && typeof dati.awards === "string" &&
     "nationality" in dati &&
-    dati.nationality instanceof Array &&
-    dati.nationality.length === 11 &&
-    dati.nationality.every(n => typeof n === "string")
-  )
+    typeof dati.nationality === "string" &&
+    [
+      "American",
+      "British",
+      "Australian",
+      "Israeli-American",
+      "South African",
+      "French",
+      "Indian",
+      "Israeli",
+      "Spanish",
+      "South Korean",
+      "Chinese"
+    ].includes(dati.nationality)
+  );
 }
 
 async function getActress(id: number): Promise<Actress | null> {
@@ -83,6 +95,20 @@ async function getAllActresses(): Promise<Actress[]> {
     } else {
       console.error("Errore sconosciuto", error)
     }
+    return []
   }
-  return []
+}
+
+async function getActresses(ids: number[]): Promise<(Actress | null)[]> {
+  try {
+    const promises = ids.map(id => getActress(id));
+    return await Promise.all(promises);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Errore nella ricezione dei dati");
+    } else {
+      console.error("Errore sconosciuto", error);
+    }
+    return [];
+  }
 }
